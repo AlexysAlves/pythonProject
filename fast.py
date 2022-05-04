@@ -8,17 +8,19 @@ import os
 
 # import pandas as pd
 # from openpyxl import Workbook, load_workbook
-
 with open('info.csv', 'w', encoding='UTF8', newline="") as f:
     writer = csv.writer(f)
     writer.writerow("")
 
-# Selection of genes based on chromosome [R1, R2, R3, R4, G1, G2, G3, G4]
-chromosome = [10, 10, 10, 10, 10, 10, 10, 10]
+# Selection of genes based on chromosome [G1, G2, G3, G4]
+print(sys.argv[1])
+chromosome = [int(c) for c in sys.argv[1].split(',')]
 
 # Default values of signal timers
-defaultGreen = {0: 10, 1: 10, 2: 10, 3: 10}
+# defaultGreen = {0: 10, 1: 10, 2: 10, 3: 10}
 defaultRed = 150
+defaultGreen = {0: chromosome[0], 1: chromosome[1], 2: chromosome[2], 3: chromosome[3]}
+# defaultRed = {0: chromosome[0], 1: chromosome[1], 2: chromosome[2], 3: chromosome[3]}
 defaultYellow = 5
 firstGreen = 1000
 signals = []
@@ -27,7 +29,7 @@ currentGreen = 0  # Indicates which signal is green currently
 nextGreen = (currentGreen + 1) % noOfSignals  # Indicates which signal will turn green next
 currentYellow = 0  # Indicates whether yellow signal is on or off
 
-speeds = {'car': 2.0, 'bus': 2.0, 'truck': 2.0, 'bike': 2.0}  # average speeds of vehicles
+speeds = {'car': 20.0, 'bus': 20.0, 'truck': 20.0, 'bike': 20.0}  # average speeds of vehicles
 
 info = []
 # Coordinates of vehicles' start
@@ -62,13 +64,13 @@ rotationAngle = 3
 mid = {'right': {'x': 705, 'y': 445}, 'down': {'x': 695, 'y': 450}, 'left': {'x': 695, 'y': 425},
        'up': {'x': 695, 'y': 400}}
 # set random or default green signal time here
-randomGreenSignalTimer = True
+randomGreenSignalTimer = False
 # set random green signal time range here
 randomGreenSignalTimerRange = [10, 20]
 
 # vehiclesTimes = [[] for i in range(4)]
 timeElapsed = 0
-simulationTime = 450
+simulationTime = 250
 timeElapsedCoods = (1100, 50)
 vehicleCountTexts = ["0", "0", "0", "0"]
 vehicleCountCoods = [(480, 210), (880, 210), (880, 550), (480, 550)]
@@ -212,7 +214,7 @@ class Vehicle(pygame.sprite.Sprite):
                             self.rotateAngle += rotationAngle
                             self.image = pygame.transform.rotate(self.originalImage, self.rotateAngle)
                             self.x += 2.4
-                            self.y -= 2.8
+                            self.y -= 28
                             if (self.rotateAngle == 90):
                                 self.turned = 1
                                 vehiclesTurned[self.direction][self.lane].append(self)
@@ -252,7 +254,7 @@ class Vehicle(pygame.sprite.Sprite):
                             self.rotateAngle += rotationAngle
                             self.image = pygame.transform.rotate(self.originalImage, - self.rotateAngle)
                             self.x += 2
-                            self.y += 1.8
+                            self.y += 18
                             if (self.rotateAngle == 90):
                                 self.turned = 1
                                 vehiclesTurned[self.direction][self.lane].append(self)
@@ -335,7 +337,7 @@ class Vehicle(pygame.sprite.Sprite):
                         if (self.turned == 0):
                             self.rotateAngle += rotationAngle
                             self.image = pygame.transform.rotate(self.originalImage, self.rotateAngle)
-                            self.x += 1.2
+                            self.x += 12
                             self.y += 1.8
                             if (self.rotateAngle == 90):
                                 self.turned = 1
@@ -373,7 +375,7 @@ class Vehicle(pygame.sprite.Sprite):
                         if (self.turned == 0):
                             self.rotateAngle += rotationAngle
                             self.image = pygame.transform.rotate(self.originalImage, -self.rotateAngle)
-                            self.x -= 2.5
+                            self.x -= 25
                             self.y += 2
                             if (self.rotateAngle == 90):
                                 self.turned = 1
@@ -456,7 +458,7 @@ class Vehicle(pygame.sprite.Sprite):
                             self.rotateAngle += rotationAngle
                             self.image = pygame.transform.rotate(self.originalImage, self.rotateAngle)
                             self.x -= 1
-                            self.y += 1.2
+                            self.y += 12
                             if (self.rotateAngle == 90):
                                 self.turned = 1
                                 vehiclesTurned[self.direction][self.lane].append(self)
@@ -495,7 +497,7 @@ class Vehicle(pygame.sprite.Sprite):
                             self.rotateAngle += rotationAngle
                             self.image = pygame.transform.rotate(self.originalImage, -self.rotateAngle)
                             self.x -= 1.8
-                            self.y -= 2.5
+                            self.y -= 25
                             if (self.rotateAngle == 90):
                                 self.turned = 1
                                 vehiclesTurned[self.direction][self.lane].append(self)
@@ -580,7 +582,7 @@ class Vehicle(pygame.sprite.Sprite):
                         if (self.turned == 0):
                             self.rotateAngle += rotationAngle
                             self.image = pygame.transform.rotate(self.originalImage, self.rotateAngle)
-                            self.x -= 2
+                            self.x -= 20
                             self.y -= 1.2
                             if (self.rotateAngle == 90):
                                 self.turned = 1
@@ -623,7 +625,7 @@ class Vehicle(pygame.sprite.Sprite):
                         if (self.turned == 0):
                             self.rotateAngle += rotationAngle
                             self.image = pygame.transform.rotate(self.originalImage, -self.rotateAngle)
-                            self.x += 1
+                            self.x += 10
                             self.y -= 1
                             if (self.rotateAngle == 90):
                                 self.turned = 1
@@ -692,7 +694,6 @@ def initialize():
         signals.append(ts4)
     repeat()
 
-
 # Print the signal timers on cmd
 def printStatus():
     status = []
@@ -701,21 +702,21 @@ def printStatus():
             if (i == currentGreen):
                 if (currentYellow == 0):
                     tmp = f"   VERDE SV {i + 1} -> vrm: {signals[i].red}  ama: {signals[i].yellow}  vrd: {signals[i].green}"
-                    print(tmp)
+                    #print(tmp)
                     status.append(tmp)
                 else:
                     tmp = f"   AMARELO SV {i + 1} -> vrm: {signals[i].red}  ama: {signals[i].yellow}  vrd: {signals[i].green}"
-                    print(tmp)
+                    #print(tmp)
                     status.append(tmp)
             else:
                 tmp = f"   VERMELHO SV {i + 1} -> vrm: {signals[i].red}  ama: {signals[i].yellow}  vrd: {signals[i].green}"
-                print(tmp)
+                #print(tmp)
                 status.append(tmp)
     info.append(status)
     with open('info.csv', 'a', encoding='UTF8', newline="") as f:
         writer = csv.writer(f)
         writer.writerow(status)
-    print()
+    #print()
 
 
 def repeat():
@@ -723,7 +724,7 @@ def repeat():
     while (signals[currentGreen].green > 0):  # while the timer of current green signal is not zero
         printStatus()
         updateValues()
-        time.sleep(1)
+        time.sleep(0.1)
     currentYellow = 1  # set yellow signal on
     # reset stop coordinates of lanes and vehicles
     for i in range(0, 3):
@@ -732,7 +733,7 @@ def repeat():
     while (signals[currentGreen].yellow > 0):  # while the timer of current yellow signal is not zero
         printStatus()
         updateValues()
-        time.sleep(1)
+        time.sleep(0.1)
     currentYellow = 0  # set yellow signal off
 
     # reset all signal times of current signal to default/random times
@@ -793,7 +794,7 @@ def generateVehicles():
             direction_number = 3
         Vehicle(lane_number, vehicleTypes[vehicle_type], direction_number, directionNumbers[direction_number],
                 will_turn_r, will_turn_l)
-        time.sleep(1)
+        time.sleep(0.1)
 
 
 def showStats():
@@ -807,7 +808,7 @@ def showStats():
                 print(tmp[0])
                 writer.writerow(tmp)
                 totalVehicles += vehicles[directionNumbers[i]]['crossed']
-        tmp = [f"Total de veículos: {totalVehicles}"]
+        tmp = [f"{totalVehicles}"]
         print(tmp[0])
         writer.writerow(tmp)
         tmp = [f"Tempo total: {timeElapsed}"]
@@ -826,7 +827,7 @@ def simTime():
     global timeElapsed, simulationTime
     while (True):
         timeElapsed += 1
-        time.sleep(1)
+        time.sleep(0.1)
         if (timeElapsed == simulationTime):
             showStats()
             os._exit(1)
@@ -859,8 +860,8 @@ class Main:
     # Setting background image i.e. image of intersection
     background = pygame.image.load('images/intersection.png')
 
-    screen = pygame.display.set_mode(screenSize)
-    pygame.display.set_caption("SIMULATION")
+    #screen = pygame.display.set_mode(screenSize)
+    #pygame.display.set_caption("SIMULATION")
 
     # Loading signal images and font
     redSignal = pygame.image.load('images/signals/red.png')
@@ -881,44 +882,44 @@ class Main:
                 showStats()
                 sys.exit()
 
-        screen.blit(background, (0, 0))  # display background in simulation
+        #screen.blit(background, (0, 0))  # display background in simulation
         for i in range(0,
                        noOfSignals):  # display signal and set timer according to current status: green, yello, or red
             if (i == currentGreen):
                 if (currentYellow == 1):
                     signals[i].signalText = signals[i].yellow
-                    screen.blit(yellowSignal, signalCoods[i])
+                    #screen.blit(yellowSignal, signalCoods[i])
                 else:
                     signals[i].signalText = signals[i].green
-                    screen.blit(greenSignal, signalCoods[i])
+                    #screen.blit(greenSignal, signalCoods[i])
             else:
                 if (signals[i].red <= 10):
                     signals[i].signalText = signals[i].red
                 else:
                     signals[i].signalText = "---"
-                screen.blit(redSignal, signalCoods[i])
+                #screen.blit(redSignal, signalCoods[i])
         signalTexts = ["", "", "", ""]
 
         # display signal timer
         for i in range(0, noOfSignals):
             signalTexts[i] = font.render(str(signals[i].signalText), True, white, black)
-            screen.blit(signalTexts[i], signalTimerCoods[i])
+            #screen.blit(signalTexts[i], signalTimerCoods[i])
 
         # display vehicle count
         for i in range(0, noOfSignals):
             displayText = vehicles[directionNumbers[i]]['crossed']
             vehicleCountTexts[i] = font.render(str(displayText), True, black, white)
-            screen.blit(vehicleCountTexts[i], vehicleCountCoods[i])
+            #screen.blit(vehicleCountTexts[i], vehicleCountCoods[i])
 
         # display time elapsed
         timeElapsedText = font.render(("Tempo de simulação: " + str(timeElapsed)), True, black, white)
-        screen.blit(timeElapsedText, timeElapsedCoods)
+        #screen.blit(timeElapsedText, timeElapsedCoods)
 
         # display the vehicles
         for vehicle in simulation:
-            screen.blit(vehicle.image, [vehicle.x, vehicle.y])
+           # screen.blit(vehicle.image, [vehicle.x, vehicle.y])
             vehicle.move()
-        pygame.display.update()
+        #pygame.display.update()
 
 
 Main()
