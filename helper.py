@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 best = [0, 0, 0, 0, 0]
 round_index = 1
+sheet = f"chromosomes{sys.argv[1]}.csv"
 def generate_chromosome(begin=20, end=50):
     chromosome = []
     for i in range(4):
@@ -17,7 +18,7 @@ def generate_chromosome(begin=20, end=50):
     global best
     if chromosome[4] > best[4]:
         best = chromosome
-    with open('chromosomes.csv', 'a', encoding='UTF8', newline="") as f:
+    with open(sheet, 'a', encoding='UTF8', newline="") as f:
         writer = csv.writer(f)
         writer.writerow(chromosome)
     return chromosome
@@ -39,16 +40,17 @@ def crossover(P1, P2):
     children[1].append(execute_simulation(children[1]))
     if children[1][4] > best[4]:
         best = children[1]
-    with open('chromosomes.csv', 'a', encoding='UTF8', newline="") as f:
+    with open(sheet, 'a', encoding='UTF8', newline="") as f:
         writer = csv.writer(f)
         writer.writerow(children[0])
         writer.writerow(children[1])
     return children
 
 def execute_simulation(C):
-    os.system(f"python fast.py {C[0]},{C[1]},{C[2]},{C[3]}")
+    os.system(f"python fast.py {C[0]},{C[1]},{C[2]},{C[3]} {sys.argv[1]}")
     time.sleep(1)
-    with open('vehicles.csv', 'r', encoding='UTF8', newline="") as f:
+    vehic = f"vehicles{sys.argv[1]}.csv"
+    with open(vehic, 'r', encoding='UTF8', newline="") as f:
         csv_reader = csv.reader(f)
         reader = list(csv_reader)
         simCount = int(reader[4][0])
@@ -57,7 +59,7 @@ def execute_simulation(C):
 def make_round(chromosomes):
     global round_index
     round_index += 1
-    with open('chromosomes.csv', 'a', encoding='UTF8', newline="") as f:
+    with open(sheet, 'a', encoding='UTF8', newline="") as f:
         writer = csv.writer(f)
         writer.writerow("")
         tmp = f"Round {round_index}"
@@ -73,7 +75,7 @@ def make_round(chromosomes):
     return children
 
 def tournament(rounds):
-    with open('chromosomes.csv', 'a', encoding='UTF8', newline="") as f:
+    with open(sheet, 'a', encoding='UTF8', newline="") as f:
         writer = csv.writer(f)
         writer.writerow("")
         tmp = f"Round{round_index}"
@@ -86,9 +88,9 @@ def tournament(rounds):
     print(f"Melhor solucao: {best}")
 
 class Main:
-    with open('chromosomes.csv', 'w', encoding='UTF8', newline="") as f:
+    with open(sheet, 'w', encoding='UTF8', newline="") as f:
         writer = csv.writer(f)
         writer.writerow("")
-    tournament(3)
+    tournament(8)
 
 Main()

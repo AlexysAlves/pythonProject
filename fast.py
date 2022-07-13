@@ -800,7 +800,8 @@ def generateVehicles():
 def showStats():
     totalVehicles = 0
     print('Informações finais')
-    with open('vehicles.csv', 'w', encoding='UTF8', newline="") as f:
+    vehic = f"vehicles{sys.argv[2]}.csv"
+    with open(vehic, 'w', encoding='UTF8', newline="") as f:
         writer = csv.writer(f)
         for i in range(0, 4):
             if (signals[i] != None):
