@@ -5,22 +5,33 @@ import pygame
 import sys
 import csv
 import os
-#import pandas as pd
-#from openpyxl import Workbook, load_workbook
+
+# import pandas as pd
+# from openpyxl import Workbook, load_workbook
+with open('info.csv', 'w', encoding='UTF8', newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow("")
+
+# Selection of genes based on chromosome [G1, G2, G3, G4]
+print(sys.argv[1])
+chromosome = [int(c) for c in sys.argv[1].split(',')]
 
 # Default values of signal timers
-defaultGreen = {0: 10, 1: 10, 2: 10, 3: 10}
+# defaultGreen = {0: 10, 1: 10, 2: 10, 3: 10}
 defaultRed = 150
+defaultGreen = {0: chromosome[0], 1: chromosome[1], 2: chromosome[2], 3: chromosome[3]}
+# defaultRed = {0: chromosome[0], 1: chromosome[1], 2: chromosome[2], 3: chromosome[3]}
 defaultYellow = 5
-
+firstGreen = 1000
 signals = []
 noOfSignals = 4
 currentGreen = 0  # Indicates which signal is green currently
 nextGreen = (currentGreen + 1) % noOfSignals  # Indicates which signal will turn green next
 currentYellow = 0  # Indicates whether yellow signal is on or off
 
-speeds = {'car': 2.25, 'bus': 1.8, 'truck': 1.8, 'bike': 2.5}  # average speeds of vehicles
+speeds = {'car': 2.0, 'bus': 2.0, 'truck': 2.0, 'bike': 2.0}  # average speeds of vehicles
 
+info = []
 # Coordinates of vehicles' start
 x = {'right': [0, 0, 0], 'down': [755, 727, 697], 'left': [1400, 1400, 1400], 'up': [602, 627, 657]}
 y = {'right': [348, 370, 398], 'down': [0, 0, 0], 'left': [498, 466, 436], 'up': [800, 800, 800]}
@@ -39,8 +50,9 @@ stopLines = {'right': 590, 'down': 330, 'left': 800, 'up': 535}
 defaultStop = {'right': 580, 'down': 320, 'left': 810, 'up': 545}
 
 # Gap between vehicles
-stoppingGap = 25  # stopping gap
-movingGap = 25  # moving gap
+stoppingGap = 15  # stopping gap
+movingGap = 15  # moving gap
+speedGap = 30
 
 # set allowed vehicle types here
 allowedVehicleTypes = {'car': True, 'bus': True, 'truck': True, 'bike': True}
@@ -52,13 +64,13 @@ rotationAngle = 3
 mid = {'right': {'x': 705, 'y': 445}, 'down': {'x': 695, 'y': 450}, 'left': {'x': 695, 'y': 425},
        'up': {'x': 695, 'y': 400}}
 # set random or default green signal time here
-randomGreenSignalTimer = True
+randomGreenSignalTimer = False
 # set random green signal time range here
 randomGreenSignalTimerRange = [10, 20]
 
-vehiclesTimes = [[] for i in range(4)]
+# vehiclesTimes = [[] for i in range(4)]
 timeElapsed = 0
-simulationTime = 900
+simulationTime = 250
 timeElapsedCoods = (1100, 50)
 vehicleCountTexts = ["0", "0", "0", "0"]
 vehicleCountCoods = [(480, 210), (880, 210), (880, 550), (480, 550)]
@@ -66,12 +78,15 @@ vehicleCountCoods = [(480, 210), (880, 210), (880, 550), (480, 550)]
 pygame.init()
 simulation = pygame.sprite.Group()
 
+
 class TrafficSignal:
     def __init__(self, red, yellow, green):
         self.red = red
         self.yellow = yellow
         self.green = green
         self.signalText = ""
+
+
 class Vehicle(pygame.sprite.Sprite):
     def __init__(self, lane, vehicleClass, direction_number, direction, will_turn_r, will_turn_l):
         pygame.sprite.Sprite.__init__(self)
@@ -610,7 +625,7 @@ class Vehicle(pygame.sprite.Sprite):
                         if (self.turned == 0):
                             self.rotateAngle += rotationAngle
                             self.image = pygame.transform.rotate(self.originalImage, -self.rotateAngle)
-                            self.x += 1.0
+                            self.x += 1
                             self.y -= 1
                             if (self.rotateAngle == 90):
                                 self.turned = 1
@@ -679,21 +694,29 @@ def initialize():
         signals.append(ts4)
     repeat()
 
-
 # Print the signal timers on cmd
 def printStatus():
+    status = []
     for i in range(0, 4):
         if (signals[i] != None):
             if (i == currentGreen):
                 if (currentYellow == 0):
-                    print("   VERDE SV", i + 1, "-> vrm:", signals[i].red, " ama:", signals[i].yellow, " vrd:",
-                          signals[i].green)
+                    tmp = f"   VERDE SV {i + 1} -> vrm: {signals[i].red}  ama: {signals[i].yellow}  vrd: {signals[i].green}"
+                    #print(tmp)
+                    status.append(tmp)
                 else:
-                    print("   AMARELO SV", i + 1, "-> vrm:", signals[i].red, " ama:", signals[i].yellow, " vrd:",
-                          signals[i].green)
+                    tmp = f"   AMARELO SV {i + 1} -> vrm: {signals[i].red}  ama: {signals[i].yellow}  vrd: {signals[i].green}"
+                    #print(tmp)
+                    status.append(tmp)
             else:
-                print("   VERMELHO SV", i + 1, "-> vrm:", signals[i].red, " ama:", signals[i].yellow, " vrd:", signals[i].green)
-    print()
+                tmp = f"   VERMELHO SV {i + 1} -> vrm: {signals[i].red}  ama: {signals[i].yellow}  vrd: {signals[i].green}"
+                #print(tmp)
+                status.append(tmp)
+    info.append(status)
+    with open('info.csv', 'a', encoding='UTF8', newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(status)
+    #print()
 
 
 def repeat():
@@ -718,6 +741,7 @@ def repeat():
         signals[currentGreen].green = random.randint(randomGreenSignalTimerRange[0], randomGreenSignalTimerRange[1])
     else:
         signals[currentGreen].green = defaultGreen[currentGreen]
+
     signals[currentGreen].yellow = defaultYellow
     signals[currentGreen].red = defaultRed
 
@@ -731,30 +755,32 @@ def repeat():
 # Update values of the signal timers after every second
 
 
-
 # Generating vehicles in the simulation
 def updateValues():
-     for i in range(0, noOfSignals):
-         if (i == currentGreen):
-             if (currentYellow == 0):
-                 signals[i].green -= 1
-             else:
-                 signals[i].yellow -= 1
-         else:
-             signals[i].red -= 1
+    for i in range(0, noOfSignals):
+
+        if (i == currentGreen):
+            if (currentYellow == 0):
+                signals[i].green -= 1
+            else:
+                signals[i].yellow -= 1
+        else:
+            signals[i].red -= 1
+
+
 def generateVehicles():
     while (True):
         vehicle_type = random.choice(allowedVehicleTypesList)
         lane_number = random.randint(1, 2)
-        will_turn = 0
-        if (lane_number == 1):
-            temp = random.randint(0, 99)
-            if (temp < 40):
-                will_turn = 1
-        elif (lane_number == 2):
-            temp = random.randint(0, 99)
-            if (temp < 40):
-                will_turn = 1
+        will_turn_r = 0
+        will_turn_l = 0
+        temp1 = random.randint(0, 60)
+        temp2 = random.randint(39, 99)
+        temp = random.randint(0, 99)
+        if (lane_number == 1 and temp <= temp1):
+            will_turn_l = 1
+        elif (lane_number == 2 and temp >= temp2):
+            will_turn_l = 1
         temp = random.randint(0, 99)
         direction_number = 0
         dist = [25, 50, 75, 100]
@@ -767,28 +793,26 @@ def generateVehicles():
         elif (temp < dist[3]):
             direction_number = 3
         Vehicle(lane_number, vehicleTypes[vehicle_type], direction_number, directionNumbers[direction_number],
-                will_turn)
+                will_turn_r, will_turn_l)
         time.sleep(1)
+
 
 def showStats():
     totalVehicles = 0
     print('Informações finais')
-    for i in range(0, 4):
-        if (signals[i] != None):
-            print('Direção', i + 1, ':', vehicles[directionNumbers[i]]['crossed'])
-            totalVehicles += vehicles[directionNumbers[i]]['crossed']
-    print('Total de veículos:', totalVehicles)
-    print('Tempo total:', timeElapsed)
-    tmp = []
-    for i in range(4):
-        soma = 0
-        for j in range(len(vehiclesTimes[i])):
-            soma += vehiclesTimes[i][j]
-        if len(vehiclesTimes[i]) > 0:
-            tmp.append(soma // len(vehiclesTimes[i]))
-    print(tmp)
-    with open('grafico.csv', 'a', encoding='UTF8', newline="") as f:
+    with open('vehicles.csv', 'w', encoding='UTF8', newline="") as f:
         writer = csv.writer(f)
+        for i in range(0, 4):
+            if (signals[i] != None):
+                tmp = [f"Direção {i + 1} : {vehicles[directionNumbers[i]]['crossed']}"]
+                print(tmp[0])
+                writer.writerow(tmp)
+                totalVehicles += vehicles[directionNumbers[i]]['crossed']
+        tmp = [f"{totalVehicles}"]
+        print(tmp[0])
+        writer.writerow(tmp)
+        tmp = [f"Tempo total: {timeElapsed}"]
+        print(tmp[0])
         writer.writerow(tmp)
 
     '''writer = pd.ExcelWriter('test.xlsx', engine='xlsxwriter') 
@@ -807,6 +831,10 @@ def simTime():
         if (timeElapsed == simulationTime):
             showStats()
             os._exit(1)
+
+
+def keyboardInterruptHandler():
+    print('My application is ending!')
 
 
 class Main:
@@ -855,7 +883,8 @@ class Main:
                 sys.exit()
 
         screen.blit(background, (0, 0))  # display background in simulation
-        for i in range(0,noOfSignals):  # display signal and set timer according to current status: green, yello, or red
+        for i in range(0,
+                       noOfSignals):  # display signal and set timer according to current status: green, yello, or red
             if (i == currentGreen):
                 if (currentYellow == 1):
                     signals[i].signalText = signals[i].yellow
@@ -891,8 +920,6 @@ class Main:
             screen.blit(vehicle.image, [vehicle.x, vehicle.y])
             vehicle.move()
         pygame.display.update()
-
-
 
 
 Main()
