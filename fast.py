@@ -783,7 +783,10 @@ def generateVehicles():
             will_turn_l = 1
         temp = random.randint(0, 99)
         direction_number = 0
-        dist = [25, 50, 75, 100]
+        if len(sys.argv) > 3:
+            dist = [int(k) for k in sys.argv[3].split(",")]
+        else:
+            dist = [25, 50, 75, 100]
         if (temp < dist[0]):
             direction_number = 0
         elif (temp < dist[1]):

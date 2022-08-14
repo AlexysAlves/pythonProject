@@ -5,7 +5,7 @@ import pygame
 import sys
 import csv
 import os
-import pandas as pd
+#import pandas as pd
 import numpy as np
 best = [0, 0, 0, 0, 0]
 round_index = 1
@@ -91,6 +91,6 @@ class Main:
     with open(sheet, 'w', encoding='UTF8', newline="") as f:
         writer = csv.writer(f)
         writer.writerow("")
-    tournament(8)
+    tournament(7)
 
 Main()
